@@ -1,0 +1,136 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+
+namespace DrinksConsole
+{
+    class Drink
+    {
+        public int Id { get; set; }
+        public string Type { get; set; }
+        public string Brand { get; set; }
+        public string Manufacturer { get; set; }
+        public string Supplier { get; set; }
+        public DateTime Expiration { get; set; }
+        public decimal Price { get; set; }
+    }
+
+    class Program
+    {
+        static List<Drink> drinks = new();
+        static int nextId = 1;
+
+        static void Main()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("=== Drinks Manager ===");
+                Console.WriteLine("1) List all");
+                Console.WriteLine("2) Add new");
+                Console.WriteLine("3) Edit");
+                Console.WriteLine("4) Delete");
+                Console.WriteLine("5) Search");
+                Console.WriteLine("0) Exit");
+                Console.Write("Choose: ");
+                var key = Console.ReadLine();
+
+                switch (key)
+                {
+                    case "1": ListAll(); break;
+                    case "2": AddNew(); break;
+                    case "3": Edit(); break;
+                    case "4": Delete(); break;
+                    case "5": Search(); break;
+                    case "0": return;
+                    default: Console.WriteLine("Invalid choice"); Pause(); break;
+                }
+            }
+        }
+
+        static void ListAll()
+        {
+            Console.Clear();
+            Console.WriteLine("Id | Type       | Brand      | Manuf.     | Supplier   | Expiration  | Price");
+            Console.WriteLine("---+------------+------------+------------+------------+-------------+-------");
+            foreach (var d in drinks)
+            {
+                Console.WriteLine(
+                    $"{d.Id,2} | {d.Type,-10} | {d.Brand,-10} | {d.Manufacturer,-10} | {d.Supplier,-10} | {d.Expiration:yyyy-MM-dd} | {d.Price,5:C}");
+            }
+            Pause();
+        }
+
+        static void AddNew()
+        {
+            Console.Clear();
+            var d = new Drink { Id = nextId++ };
+            Console.Write("Type: "); d.Type = Console.ReadLine();
+            Console.Write("Brand: "); d.Brand = Console.ReadLine();
+            Console.Write("Manufacturer: "); d.Manufacturer = Console.ReadLine();
+            Console.Write("Supplier: "); d.Supplier = Console.ReadLine();
+            Console.Write("Expiration (YYYY-MM-DD): ");
+            d.Expiration = DateTime.ParseExact(Console.ReadLine(), "yyyy-MM-dd", null);
+            Console.Write("Price: ");
+            d.Price = decimal.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+            drinks.Add(d);
+        }
+
+        static void Edit()
+        {
+            Console.Clear();
+            Console.Write("Enter Id to edit: ");
+            if (!int.TryParse(Console.ReadLine(), out int id)) { Pause(); return; }
+            var d = drinks.Find(x => x.Id == id);
+            if (d == null) { Console.WriteLine("Not found"); Pause(); return; }
+
+            Console.Write($"Type ({d.Type}): ");
+            var s = Console.ReadLine(); if (!string.IsNullOrEmpty(s)) d.Type = s;
+            Console.Write($"Brand ({d.Brand}): ");
+            s = Console.ReadLine(); if (!string.IsNullOrEmpty(s)) d.Brand = s;
+            Console.Write($"Manufacturer ({d.Manufacturer}): ");
+            s = Console.ReadLine(); if (!string.IsNullOrEmpty(s)) d.Manufacturer = s;
+            Console.Write($"Supplier ({d.Supplier}): ");
+            s = Console.ReadLine(); if (!string.IsNullOrEmpty(s)) d.Supplier = s;
+            Console.Write($"Expiration ({d.Expiration:yyyy-MM-dd}): ");
+            s = Console.ReadLine();
+            if (!string.IsNullOrEmpty(s))
+                d.Expiration = DateTime.ParseExact(s, "yyyy-MM-dd", null);
+            Console.Write($"Price ({d.Price}): ");
+            s = Console.ReadLine();
+            if (!string.IsNullOrEmpty(s))
+                d.Price = decimal.Parse(s, CultureInfo.InvariantCulture);
+        }
+
+        static void Delete()
+        {
+            Console.Clear();
+            Console.Write("Enter Id to delete: ");
+            if (int.TryParse(Console.ReadLine(), out int id))
+                drinks.RemoveAll(x => x.Id == id);
+        }
+
+        static void Search()
+        {
+            Console.Clear();
+            Console.Write("Enter search term: ");
+            var term = Console.ReadLine()?.ToLower();
+            Console.WriteLine("Results:");
+            foreach (var d in drinks)
+            {
+                if (d.Type.ToLower().Contains(term) ||
+                    d.Brand.ToLower().Contains(term))
+                {
+                    Console.WriteLine($"{d.Id}: {d.Type}, {d.Brand}");
+                }
+            }
+            Pause();
+        }
+
+        static void Pause()
+        {
+            Console.WriteLine("\nPress Enter to continue...");
+            Console.ReadLine();
+        }
+    }
+}
